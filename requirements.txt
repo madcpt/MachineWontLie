@@ -1,0 +1,6 @@
+torch~=1.5.0
+torchvision~=0.6.0
+tensorboardX~=1.2
+
+numpy~=1.18.2
+overrides~=2.8.0
