@@ -1,6 +1,7 @@
 import time
 import torch
 from torch import nn
+from torch.nn import init
 from torch.utils.data import DataLoader
 from tensorboardX import SummaryWriter
 
@@ -14,7 +15,7 @@ class BaseModel(nn.Module):
         self.local_time = time.localtime()
         if len(model_name) > 0:
             self.writer = SummaryWriter('runs/%s-%d.%d-%d:%d' % (
-                model_name, self.local_time.tm_mon, self.local_time.tm_mday, self.local_time.tm_min,
+                model_name, self.local_time.tm_mon, self.local_time.tm_mday, self.local_time.tm_hour,
                 self.local_time.tm_min))
         self.device = device
         # self.optimizer = torch.optim.SGD(self.parameters(), lr=lr)
@@ -80,3 +81,72 @@ class BaseModel(nn.Module):
         for epoch in range(epochs):
             self.train_epoch(epoch, train_loader)
             self.test_epoch(epoch, test_loader)
+
+    @staticmethod
+    def weight_init(m):
+        """
+        Usage:
+            model = Model()
+            model.apply(weight_init)
+        """
+        if isinstance(m, nn.Conv1d):
+            init.normal_(m.weight.data)
+            if m.bias is not None:
+                init.normal_(m.bias.data)
+        elif isinstance(m, nn.Conv2d):
+            init.xavier_normal_(m.weight.data)
+            if m.bias is not None:
+                init.normal_(m.bias.data)
+        elif isinstance(m, nn.Conv3d):
+            init.xavier_normal_(m.weight.data)
+            if m.bias is not None:
+                init.normal_(m.bias.data)
+        elif isinstance(m, nn.ConvTranspose1d):
+            init.normal_(m.weight.data)
+            if m.bias is not None:
+                init.normal_(m.bias.data)
+        elif isinstance(m, nn.ConvTranspose2d):
+            init.xavier_normal_(m.weight.data)
+            if m.bias is not None:
+                init.normal_(m.bias.data)
+        elif isinstance(m, nn.ConvTranspose3d):
+            init.xavier_normal_(m.weight.data)
+            if m.bias is not None:
+                init.normal_(m.bias.data)
+        elif isinstance(m, nn.BatchNorm1d):
+            init.normal_(m.weight.data, mean=1, std=0.02)
+            init.constant_(m.bias.data, 0)
+        elif isinstance(m, nn.BatchNorm2d):
+            init.normal_(m.weight.data, mean=1, std=0.02)
+            init.constant_(m.bias.data, 0)
+        elif isinstance(m, nn.BatchNorm3d):
+            init.normal_(m.weight.data, mean=1, std=0.02)
+            init.constant_(m.bias.data, 0)
+        elif isinstance(m, nn.Linear):
+            init.xavier_normal_(m.weight.data)
+            if m.bias is not None:
+                init.normal_(m.bias.data)
+        elif isinstance(m, nn.LSTM):
+            for param in m.parameters():
+                if len(param.shape) >= 2:
+                    init.orthogonal_(param.data)
+                else:
+                    init.normal_(param.data)
+        elif isinstance(m, nn.LSTMCell):
+            for param in m.parameters():
+                if len(param.shape) >= 2:
+                    init.orthogonal_(param.data)
+                else:
+                    init.normal_(param.data)
+        elif isinstance(m, nn.GRU):
+            for param in m.parameters():
+                if len(param.shape) >= 2:
+                    init.orthogonal_(param.data)
+                else:
+                    init.normal_(param.data)
+        elif isinstance(m, nn.GRUCell):
+            for param in m.parameters():
+                if len(param.shape) >= 2:
+                    init.orthogonal_(param.data)
+                else:
+                    init.normal_(param.data)

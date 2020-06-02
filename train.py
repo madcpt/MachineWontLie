@@ -16,6 +16,7 @@ from models.LogisticRegression import SKLRModel
 from models.LR import LRModel
 from models.LDA import LDAModel
 from models.SVM import SVMModel
+from models.LRRidge import LRRidgeModel
 
 
 def get_dataset(batch_size: int, test_batch_size: int):
@@ -64,14 +65,13 @@ def main():
 
     device = torch.device("cuda" if use_cuda else "cpu")
 
-    kwargs = {'num_workers': 1, 'pin_memory': True} if use_cuda else {}
-
     train_loader, test_loader = get_dataset(args.batch_size, args.test_batch_size)
 
-    # model = LRModel('LogisticRegression', lr=1e-1, device=device).to(device)
-    model = SKLRModel('', lr=1e-1, device=device).to(device)
+    # model = LRModel('NNLogisticRegression', lr=1e-1, device=device).to(device)
+    # model = SKLRModel('', lr=1e-1, device=device).to(device)
     # model = LDAModel('', lr=2e-1, device=device).to(device)
     # model = SVMModel('', lr=2e-1, device=device).to(device)
+    model = LRRidgeModel('NN+LR+Ridge', lr=1e-1, device=device).to(device)
 
     # print(train_loader.dataset.data.shape)
     # print(test_loader.dataset.data.shape)
