@@ -16,7 +16,13 @@ from models.LogisticRegression import SKLRModel
 from models.LR import LRModel
 from models.LDA import LDAModel
 from models.SVM import SVMModel
-from models.LRRidge import LRRidgeModel
+# from models.LRRidge import LRRidgeModel
+from models.LeNet5 import LeNet5
+
+
+def get_dataset(batch_size: int, test_batch_size: int):
+    if not os.path.exists('./data/'):
+        os.mkdir('./data/')
 
 
 def get_dataset(batch_size: int, test_batch_size: int):
@@ -51,7 +57,7 @@ def main():
     parser = argparse.ArgumentParser(description='PyTorch MNIST Example')
     parser.add_argument('--batch-size', type=int, default=64, metavar='N', help='input batch size for training (default: 64)')
     parser.add_argument('--test-batch-size', type=int, default=1000, metavar='N', help='input batch size for testing (default: 1000)')
-    parser.add_argument('--epochs', type=int, default=30, metavar='N', help='number of epochs to train (default: 14)')
+    parser.add_argument('--epochs', type=int, default=100, metavar='N', help='number of epochs to train (default: 14)')
     parser.add_argument('--lr', type=float, default=1.0, metavar='LR', help='learning rate (default: 1.0)')
     parser.add_argument('--gamma', type=float, default=0.7, metavar='M', help='Learning rate step gamma (default: 0.7)')
     parser.add_argument('--no-cuda', action='store_true', default=False, help='disables CUDA training')
@@ -71,7 +77,8 @@ def main():
     # model = SKLRModel('', lr=1e-1, device=device).to(device)
     # model = LDAModel('', lr=2e-1, device=device).to(device)
     # model = SVMModel('', lr=2e-1, device=device).to(device)
-    model = LRRidgeModel('NN+LR+Ridge', lr=1e-1, device=device).to(device)
+    # model = LRRidgeModel('NN+LR+Ridge', lr=1e-1, device=device).to(device)
+    model = LeNet5('LeNet5', lr=1e-3, device=device).to(device)
 
     # print(train_loader.dataset.data.shape)
     # print(test_loader.dataset.data.shape)

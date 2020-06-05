@@ -71,8 +71,8 @@ class BaseModel(nn.Module):
 
         test_loss /= len(test_loader.dataset)
         acc = 100. * correct / len(test_loader.dataset)
-        print('Test set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)'.format(
-            test_loss, correct, len(test_loader.dataset), acc))
+        print('Test at epoch {:d}: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)'.format(
+            epoch_num, test_loss, correct, len(test_loader.dataset), acc))
         self.writer.add_scalar('test_loss', test_loss, epoch_num)
         self.writer.add_scalar('test_acc', acc, epoch_num)
         # self.writer.add_scalars('loss', {'test_loss': test_loss}, epoch_num)
