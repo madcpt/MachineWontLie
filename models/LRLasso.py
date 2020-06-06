@@ -6,13 +6,13 @@ from overrides import overrides
 from models.BaseModel import BaseModel
 
 
-class LRRidgeModel(BaseModel):
+class LRLassoModel(BaseModel):
     def __init__(self, configs: object):
         super().__init__(configs.model.model_name, configs.device)
         self.fc = nn.Linear(28 * 28, 10, bias=False).to(configs.device)
         self.optimizer = torch.optim.SGD(self.parameters(), lr=configs.train.learning_rate)
         self.apply(self.weight_init)
-        self.lambda_ = configs.train.ridge_lambda
+        self.lambda_ = configs.train.lasso_lambda
 
     @overrides
     def forward(self, input_data: torch.Tensor) -> torch.Tensor:
@@ -40,8 +40,7 @@ class LRRidgeModel(BaseModel):
         output_feature = torch.softmax(output_feature, dim=-1)
         target_flatten = target.unsqueeze(dim=-1)
         log_likelihood = torch.gather(output_feature, 1, target_flatten)
-        # loss = -torch.sum(log_likelihood) + self.lambda_ * torch.sum(torch.norm(self.fc.weight, keepdim=True))
-        loss = -torch.sum(log_likelihood) + self.lambda_ * torch.sum(nn.functional.normalize(self.fc.weight, p=2))
+        loss = -torch.sum(log_likelihood) + self.lambda_ * torch.sum(nn.functional.normalize(self.fc.weight, p=1))
 
         # loss = loss + self.lambda_ * torch.sum(nn.functional.normalize(self.fc.weight, p=2, dim=1))
         return loss

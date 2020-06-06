@@ -6,10 +6,10 @@ from models.BaseModel import BaseModel
 
 
 class LRModel(BaseModel):
-    def __init__(self, model_name: str, lr: float, device: torch.device):
-        super().__init__(model_name, device)
-        self.fc = nn.Linear(28 * 28, 10, bias=True).to(self.device)
-        self.optimizer = torch.optim.SGD(self.parameters(), lr=lr)
+    def __init__(self, configs: object):
+        super().__init__(configs.model.model_name, configs.device)
+        self.fc = nn.Linear(28 * 28, 10, bias=True).to(configs.device)
+        self.optimizer = torch.optim.SGD(self.parameters(), lr=configs.train.learning_rate)
         self.apply(self.weight_init)
 
     @overrides
@@ -27,8 +27,14 @@ class LRModel(BaseModel):
     def calc_loss(output_feature: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
         # return torch.nn.functional.nll_loss(output_feature, target)
         batch_size, _ = output_feature.shape
-        target_flatten = nn.functional.one_hot(target, num_classes=10)
-        output_feature = torch.sigmoid(output_feature)
-        loss = torch.nn.functional.binary_cross_entropy(output_feature.view(-1, 1), target_flatten.view(-1, 1).float())
+        # FIXME
+        # target_flatten = nn.functional.one_hot(target, num_classes=10)
+        # output_feature = torch.sigmoid(output_feature)
+        # loss = torch.nn.functional.binary_cross_entropy(output_feature.view(-1, 1), target_flatten.view(-1, 1).float())
+        # TODO: correctness unchecked
+        output_feature = torch.softmax(output_feature, dim=-1)
+        target_flatten = target.unsqueeze(dim=-1)
+        log_likelihood = torch.gather(output_feature, 1, target_flatten)
+        loss = -torch.sum(log_likelihood)
         return loss
 

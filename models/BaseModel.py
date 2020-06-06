@@ -17,6 +17,8 @@ class BaseModel(nn.Module):
             self.writer = SummaryWriter('runs/%s-%d.%d-%d:%d' % (
                 model_name, self.local_time.tm_mon, self.local_time.tm_mday, self.local_time.tm_hour,
                 self.local_time.tm_min))
+        else:
+            self.writer = None
         self.device = device
         # self.optimizer = torch.optim.SGD(self.parameters(), lr=lr)
 
@@ -34,10 +36,10 @@ class BaseModel(nn.Module):
         pass
 
     def optimize(self, loss: torch.Tensor):
-        loss.backward()
-        self.optimizer.step()
         self.optimizer.zero_grad()
         self.zero_grad()
+        loss.backward()
+        self.optimizer.step()
 
     def train_epoch(self, epoch_num: int, train_loader: DataLoader):
         self.train()
@@ -46,17 +48,16 @@ class BaseModel(nn.Module):
             data, target = data.to(self.device), target.to(self.device)
             output = self.forward(data)
             loss = self.calc_loss(output, target)
-            loss.backward()
-            self.optimizer.step()
-            self.optimizer.zero_grad()
+            self.optimize(loss)
             train_loss += loss.item()
             # if batch_idx % args.log_interval == 0:
             #     print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
             #         epoch, batch_idx * len(data), len(train_loader.dataset),
             #                100. * batch_idx / len(train_loader), loss.item()))
         train_loss /= len(train_loader)
-        self.writer.add_scalar('train_loss', train_loss, epoch_num)
-        # self.writer.add_scalars('loss', {'train_loss': train_loss}, epoch_num)
+        if self.writer:
+            self.writer.add_scalar('train_loss', train_loss, epoch_num)
+            # self.writer.add_scalars('loss', {'train_loss': train_loss}, epoch_num)
 
     def test_epoch(self, epoch_num: int, test_loader: DataLoader):
         self.eval()
@@ -73,9 +74,10 @@ class BaseModel(nn.Module):
         acc = 100. * correct / len(test_loader.dataset)
         print('Test at epoch {:d}: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)'.format(
             epoch_num, test_loss, correct, len(test_loader.dataset), acc))
-        self.writer.add_scalar('test_loss', test_loss, epoch_num)
-        self.writer.add_scalar('test_acc', acc, epoch_num)
-        # self.writer.add_scalars('loss', {'test_loss': test_loss}, epoch_num)
+        if self.writer:
+            self.writer.add_scalar('test_loss', test_loss, epoch_num)
+            self.writer.add_scalar('test_acc', acc, epoch_num)
+            # self.writer.add_scalars('loss', {'test_loss': test_loss}, epoch_num)
 
     def run_epochs(self, epochs: int, train_loader: DataLoader, test_loader: DataLoader):
         for epoch in range(epochs):
