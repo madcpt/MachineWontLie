@@ -81,8 +81,12 @@ class BaseModel(nn.Module):
 
     def run_epochs(self, epochs: int, train_loader: DataLoader, test_loader: DataLoader):
         for epoch in range(epochs):
+            t1 = time.time()
             self.train_epoch(epoch, train_loader)
+            t2 = time.time()
             self.test_epoch(epoch, test_loader)
+            print(t2 - t1, time.time() - t2)
+            exit()
 
     @staticmethod
     def weight_init(m):

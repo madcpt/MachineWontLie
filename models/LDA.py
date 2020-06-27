@@ -4,13 +4,14 @@ from torch.nn import init
 from torch.utils.data import DataLoader
 from overrides import overrides
 import numpy as np
+import time
 
 from models.BaseModel import BaseModel
 
 
 class LDAModel(BaseModel):
-    def __init__(self, model_name: str, lr: float, device: torch.device):
-        super().__init__(model_name, torch.device('cpu'))
+    def __init__(self, configs: object):
+        super().__init__(configs.model.model_name, configs.device)
         from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
         self.lda_cls = LinearDiscriminantAnalysis()
 
@@ -30,6 +31,10 @@ class LDAModel(BaseModel):
 
     @overrides
     def run_epochs(self, epochs: int, train_loader: DataLoader, test_loader: DataLoader):
+        t1 = time.time()
         self.train_epoch(0, train_loader)
+        t2 = time.time()
         acc = self.test_epoch(0, test_loader)
-        print(acc)
+        if self.writer:
+            self.writer.add_scalar('test_acc', acc, 0)
+        print(acc, t2 - t1, time.time() - t2)

@@ -1,0 +1,16 @@
+model:
+  model_name: SVMModel
+  log_name: SVM_rbf
+  load_path: ''
+  save_path: ''
+  use_cuda: True
+  kernel: rbf
+train:
+  subset_size: 6000
+  seed: 1
+  epochs: 100
+  learning_rate: 0.001
+  gamma: 0.7
+  optimizer: SGD
+  batch_size: 64
+  test_batch_size: 100

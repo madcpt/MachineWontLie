@@ -1,6 +1,6 @@
 model:
   model_name: LRRidgeModel
-  log_name: Logistic_Regression_Ridge
+  log_name: LR_Ridge
   load_path: ''
   save_path: ''
   use_cuda: True

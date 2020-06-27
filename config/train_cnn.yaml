@@ -1,5 +1,5 @@
 model:
-  model_name: CNNMOdel
+  model_name: CNNModel
   log_name: SimpleCNN
   load_path: ''
   save_path: ''

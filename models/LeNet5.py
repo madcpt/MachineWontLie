@@ -10,9 +10,15 @@ class LeNet5(BaseModel):
     def __init__(self, configs: object):
         super().__init__(configs.model.model_name, configs.device)
         self.conv1 = nn.Conv2d(1, 6, 5, padding=2)
+        self.max_pool1 = nn.MaxPool2d(2)
+        self.relu1 = nn.ReLU()
         self.conv2 = nn.Conv2d(6, 16, 5)
+        self.max_pool2 = nn.MaxPool2d(2)
+        self.relu2 = nn.ReLU()
         self.fc1 = nn.Linear(16*5*5, 120)
+        self.relu3 = nn.ReLU()
         self.fc2 = nn.Linear(120, 84)
+        self.relu4 = nn.ReLU()
         self.fc3 = nn.Linear(84, 10)
         self = self.to(device=configs.device)
         self.optimizer = torch.optim.SGD(self.parameters(), lr=configs.train.learning_rate)
@@ -20,11 +26,17 @@ class LeNet5(BaseModel):
     
     @overrides
     def forward(self, x):
-        x = F.max_pool2d(F.relu(self.conv1(x)), (2, 2))
-        x = F.max_pool2d(F.relu(self.conv2(x)), (2, 2))
+        x = self.conv1(x)
+        x = self.max_pool1(x)
+        x = self.relu1(x)
+        x = self.conv2(x)
+        x = self.max_pool2(x)
+        x = self.relu2(x)
         x = x.view(-1, self.num_flat_features(x))
-        x = F.relu(self.fc1(x))
-        x = F.relu(self.fc2(x))
+        x = self.fc1(x)
+        x = self.relu3(x)
+        x = self.fc2(x)
+        x = self.relu4(x)
         x = self.fc3(x)
         return x
 

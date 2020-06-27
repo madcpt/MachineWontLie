@@ -1,0 +1,16 @@
+model:
+  model_name: GAN
+  log_name: GAN
+  load_path: ''
+  save_path: './runs/'
+  use_cuda: True
+train:
+  subset_size: 6000
+  seed: 1
+  epochs: 200
+  discriminator_learning_rate: 0.0003
+  generator_learning_rate: 0.0003
+  gamma: 0.7
+  optimizer: SGD
+  batch_size: 64
+  test_batch_size: 100

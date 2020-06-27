@@ -1,6 +1,6 @@
 model:
   model_name: LRLassoModel
-  log_name: Logistic_Regression_Lasso
+  log_name: LR_Lasso
   load_path: ''
   save_path: ''
   use_cuda: True

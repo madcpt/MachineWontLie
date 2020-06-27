@@ -17,11 +17,14 @@ from models.BaseModel import BaseModel
 # from models.LogisticRegression import SKLRModel
 from models.LR import LRModel
 from models.LDA import LDAModel
+from models.PCA import PCAModel
 from models.SVM import SVMModel
 from models.LRRidge import LRRidgeModel
 from models.LRLasso import LRLassoModel
 from models.LeNet5 import LeNet5
 from models.CNN import CNNModel
+from models.GAN import GAN
+from models.GMM import GMMModel
 
 
 class dict2obj(dict):
@@ -40,12 +43,8 @@ class dict2obj(dict):
         else:
             raise KeyError
 
-def get_dataset(batch_size: int, test_batch_size: int):
-    if not os.path.exists('./data/'):
-        os.mkdir('./data/')
 
-
-def get_dataset(batch_size: int, test_batch_size: int, train_set_size: int):
+def get_dataset(batch_size: int, test_batch_size: int, train_set_size: int, shuffle: bool=True):
     if not os.path.exists('./data/'):
         os.mkdir('./data/')
     split_location = './data/mnist_train_split_%d.pl' % train_set_size
@@ -65,13 +64,16 @@ def get_dataset(batch_size: int, test_batch_size: int, train_set_size: int):
             print('Using the whole training set')
             split_set = mnist_trainset_index
 
-    train_dataset = datasets.MNIST('./data', train=True, download=False, transform=transforms.ToTensor())
+    transform = transforms.Compose([transforms.ToTensor(),
+                                    transforms.Normalize((0.5,), (0.5,))])
+
+    train_dataset = datasets.MNIST('./data', train=True, download=False, transform=transform)
     train_dataset.data = train_dataset.data[split_set]
     train_dataset.targets = train_dataset.targets[split_set]
 
-    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=shuffle)
     test_loader = DataLoader(
-        datasets.MNIST('./data', train=False, transform=transforms.ToTensor()),
+        datasets.MNIST('./data', train=False, transform=transform),
         batch_size=test_batch_size, shuffle=False)
     return train_loader, test_loader
 
@@ -87,8 +89,6 @@ if __name__ == "__main__":
             configs = yaml.load(f, Loader=yaml.SafeLoader)
             print(configs)
         configs = dict2obj(configs)
-        if args[1] == 'debug':
-            configs.model.log_name = ''
     else:
         exit()
 
@@ -96,9 +96,14 @@ if __name__ == "__main__":
     configs.device = torch.device("cuda" if use_cuda else "cpu")
     torch.manual_seed(configs.train.seed)
 
-    train_loader, test_loader = get_dataset(configs.train.batch_size, configs.train.test_batch_size, configs.train.subset_size)
+    shuffle = 'GAN' not in configs.model.model_name
+    train_loader, test_loader = get_dataset(configs.train.batch_size, configs.train.test_batch_size, configs.train.subset_size, shuffle)
 
     model_abs :BaseModel  = globals()[configs.model.model_name]
+    if args[1] == 'debug':
+        configs.model.model_name = ''
+    else:
+        configs.model.model_name = configs.model.log_name
     model = model_abs(configs)
 
     # model = LRModel('NNLogisticRegression', lr=1e-1, device=device).to(device)
@@ -113,6 +118,6 @@ if __name__ == "__main__":
 
     model.run_epochs(epochs=configs.train.epochs, train_loader=train_loader, test_loader=test_loader)
 
-    # if args.save_model:
-    #     torch.save(model.state_dict(), "mnist_cnn.pt")
+    # if len(configs.model.save_path) > 0:
+    #     torch.save(model.state_dict(), configs.model.save_path)
 

@@ -13,6 +13,7 @@ class LRRidgeModel(BaseModel):
         self.optimizer = torch.optim.SGD(self.parameters(), lr=configs.train.learning_rate)
         self.apply(self.weight_init)
         self.lambda_ = configs.train.ridge_lambda
+        self.criterion = nn.CrossEntropyLoss()
 
     @overrides
     def forward(self, input_data: torch.Tensor) -> torch.Tensor:
@@ -37,11 +38,12 @@ class LRRidgeModel(BaseModel):
         # exit()
         # loss = loss + self.lambda_ * torch.mean(torch.norm(self.fc.weight, keepdim=True))
         
-        output_feature = torch.softmax(output_feature, dim=-1)
-        target_flatten = target.unsqueeze(dim=-1)
-        log_likelihood = torch.gather(output_feature, 1, target_flatten)
-        # loss = -torch.sum(log_likelihood) + self.lambda_ * torch.sum(torch.norm(self.fc.weight, keepdim=True))
-        loss = -torch.sum(log_likelihood) + self.lambda_ * torch.sum(nn.functional.normalize(self.fc.weight, p=2))
+        # output_feature = torch.softmax(output_feature, dim=-1)
+        # target_flatten = target.unsqueeze(dim=-1)
+        # log_likelihood = torch.gather(output_feature, 1, target_flatten)
+        lr_loss = self.criterion(output_feature, target)
+        loss = lr_loss + self.lambda_ * torch.norm(self.fc.weight, 2)
+        # print(output_feature.shape, target.shape, lr_loss, loss - lr_loss)
 
         # loss = loss + self.lambda_ * torch.sum(nn.functional.normalize(self.fc.weight, p=2, dim=1))
         return loss
